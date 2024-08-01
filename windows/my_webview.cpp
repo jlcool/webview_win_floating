@@ -98,6 +98,7 @@ private:
 wil::com_ptr<ICoreWebView2Environment> g_env;
 
 #include <map>
+#include <WebView2EnvironmentOptions.h>
 std::map<UINT64, std::string> g_navigationMap;
 
 // --------------------------------------------------------------------------
@@ -122,8 +123,10 @@ HRESULT InitWebViewRuntime(PCWSTR pwUserDataFolder, std::function<void(HRESULT)>
         if (callback != nullptr) callback(S_OK);
         return S_OK;
     }
-
-    return CreateCoreWebView2EnvironmentWithOptions(nullptr, pwUserDataFolder, nullptr,
+    wil::com_ptr<ICoreWebView2EnvironmentOptions> options;
+    options = Microsoft::WRL::Make<CoreWebView2EnvironmentOptions>();
+    options->put_AdditionalBrowserArguments(L"--disable-web-security");
+    return CreateCoreWebView2EnvironmentWithOptions(nullptr, pwUserDataFolder, options.get(),
         Callback<ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler>(
             [callback](HRESULT result, ICoreWebView2Environment* env) -> HRESULT {
                 g_env = env;
@@ -160,6 +163,7 @@ MyWebViewImpl::MyWebViewImpl(HWND hWnd,
                     onCreated(hr, NULL);
                     return hr;
                 }
+                
 
                 hr = controller->get_CoreWebView2(&m_pWebview);
                 hr = m_pWebview->get_Settings(&m_pSettings);
@@ -349,7 +353,7 @@ HRESULT MyWebViewImpl::loadHtmlString(LPCWSTR html)
 
 HRESULT MyWebViewImpl::runJavascript(LPCWSTR javaScriptString, bool ignoreResult, std::function<void(std::string)> callback)
 {
-    return m_pWebview->ExecuteScript(javaScriptString, Callback<ICoreWebView2ExecuteScriptCompletedHandler >(
+    return m_pWebview->ExecuteScript( javaScriptString, Callback<ICoreWebView2ExecuteScriptCompletedHandler >(
         [callback, ignoreResult](HRESULT hr, LPCWSTR resultObjectAsJson) -> HRESULT {
             if (callback != nullptr) {
                 if (ignoreResult) callback("");

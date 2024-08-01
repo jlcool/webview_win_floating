@@ -31,7 +31,6 @@ std::shared_ptr<WCHAR[]> utf8ToUtf16(std::string str8) {
 
   return str16;
 }
-
 // Jacky }
 
 namespace webview_win_floating {
@@ -96,6 +95,7 @@ void WebviewWinFloatingPlugin::HandleMethodCall(
     std::shared_ptr<flutter::MethodResult<flutter::EncodableValue>> shared_result = std::move(result);
     auto onCreate = [shared_result, webviewId, url](HRESULT hr, MyWebView *webview) -> void {
       if (webview != NULL) {
+
         webviewMap[webviewId] = webview;
         std::cout << "[webview] native create: id = " << webviewId << std::endl;
         if (!url.empty()) webview->loadUrl(toWideString(url));
@@ -175,11 +175,11 @@ void WebviewWinFloatingPlugin::HandleMethodCall(
     result->Success(flutter::EncodableValue(true));
   } else if (method_call.method_name().compare("loadUrl") == 0) {
     auto url = std::get<std::string>(arguments[flutter::EncodableValue("url")]);
-    auto hr = webview->loadUrl(toWideString(url));
+    auto hr = webview->loadUrl(utf8ToUtf16(url).get());
     result->Success(flutter::EncodableValue(SUCCEEDED(hr)));
   } else if (method_call.method_name().compare("loadHtmlString") == 0) {
     auto html = std::get<std::string>(arguments[flutter::EncodableValue("html")]);
-    auto hr = webview->loadHtmlString(toWideString(html));
+    auto hr = webview->loadHtmlString(utf8ToUtf16(html).get());
     result->Success(flutter::EncodableValue(SUCCEEDED(hr)));
   } else if (method_call.method_name().compare("runJavascript") == 0) {
     std::shared_ptr<flutter::MethodResult<flutter::EncodableValue>> shared_result = std::move(result);
