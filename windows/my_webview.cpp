@@ -175,7 +175,20 @@ MyWebViewImpl::MyWebViewImpl(HWND hWnd,
 #ifndef _DEBUG
                 m_pSettings->put_AreDevToolsEnabled(FALSE);
 #endif
+                m_pWebview->add_PermissionRequested(
+                        Callback<ICoreWebView2PermissionRequestedEventHandler>(
+                                [](ICoreWebView2* sender, ICoreWebView2PermissionRequestedEventArgs* args) -> HRESULT {
+                                    COREWEBVIEW2_PERMISSION_KIND kind;
+                                    args->get_PermissionKind(&kind);
 
+                                    if (kind == COREWEBVIEW2_PERMISSION_KIND_MICROPHONE) {
+                                        args->put_State(COREWEBVIEW2_PERMISSION_STATE_ALLOW);
+                                    } else {
+                                        args->put_State(COREWEBVIEW2_PERMISSION_STATE_DEFAULT);
+                                    }
+                                    return S_OK;
+                                }).Get(),
+                        nullptr);
                 m_pWebview->add_NavigationStarting(
                     Callback<ICoreWebView2NavigationStartingEventHandler>(
                         [=](ICoreWebView2* sender, ICoreWebView2NavigationStartingEventArgs* args) -> HRESULT {
