@@ -62,6 +62,8 @@ public:
     void enableJavascript(bool bEnable);
     HRESULT setUserAgent(LPCWSTR userAgent);
 
+    void setMediaPlaybackRequiresUserGesture(bool requireGesture);
+
     HRESULT updateBounds(RECT& bounds);
     HRESULT getBounds(RECT& bounds);
     HRESULT setVisible(bool isVisible);
@@ -175,6 +177,8 @@ MyWebViewImpl::MyWebViewImpl(HWND hWnd,
 #ifndef _DEBUG
                 m_pSettings->put_AreDevToolsEnabled(FALSE);
 #endif
+                // 默认启用媒体播放需要用户手势（可根据需求修改为false）
+                m_pSettings->put_IsMediaPlaybackRequiresUserGestureEnabled(FALSE);
                 m_pWebview->add_PermissionRequested(
                         Callback<ICoreWebView2PermissionRequestedEventHandler>(
                                 [](ICoreWebView2* sender, ICoreWebView2PermissionRequestedEventArgs* args) -> HRESULT {
@@ -361,6 +365,13 @@ void MyWebViewImpl::setHasNavigationDecision(bool hasNavigationDecision)
     m_hasNavigationDecision = hasNavigationDecision;
 }
 
+//实现媒体播放手势控制的方法
+void MyWebViewImpl::setMediaPlaybackRequiresUserGesture(bool requireGesture)
+{
+    if (m_pSettings) {
+        m_pSettings->put_IsMediaPlaybackRequiresUserGestureEnabled(requireGesture);
+    }
+}
 
 HRESULT MyWebViewImpl::loadUrl(LPCWSTR url)
 {
