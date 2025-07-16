@@ -127,8 +127,7 @@ HRESULT InitWebViewRuntime(PCWSTR pwUserDataFolder, std::function<void(HRESULT)>
     }
     wil::com_ptr<ICoreWebView2EnvironmentOptions> options;
     options = Microsoft::WRL::Make<CoreWebView2EnvironmentOptions>();
-    options->put_AdditionalBrowserArguments(L"--disable-web-security");
-    options->put_AdditionalBrowserArguments(L"--autoplay-policy=no-user-gesture-required");
+    options->put_AdditionalBrowserArguments(L"--disable-web-security --autoplay-policy=no-user-gesture-required");
     return CreateCoreWebView2EnvironmentWithOptions(nullptr, pwUserDataFolder, options.get(),
         Callback<ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler>(
             [callback](HRESULT result, ICoreWebView2Environment* env) -> HRESULT {
